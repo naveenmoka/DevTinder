@@ -1,22 +1,30 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = 3000; // Define your port here
 
-app.use("/user", (req, res) => {
+// This matches: abc, abbc, abbbc...
+app.get("/user/:userId", (req, res) => {
+  console.log(req.params);
+  res.send("Data locally Naveen");
+});
+app.get("/user", (req, res) => {
+  console.log(req.query);
   res.send("Data locally Naveen");
 });
 
-app.get("/user", (req, res) => {
-  res.send({ fistName: "Naveen", lastName: "Moka" });
+app.get(/\/ab?c/, (req, res) => {
+  res.send("Data locally Naveen");
+});
+app.get(/\/ab+c/, (req, res) => {
+  res.send("Data locally Naveen");
+});
+app.get(/\/ab*c/, (req, res) => {
+  res.send("Data locally Naveen");
+});
+app.get(/.fly$/, (req, res) => {
+  res.send("Data locally Naveen");
 });
 
-app.post("/user", (req, res) => {
-  res.send("Data Saved Successfully");
-});
-
-app.delete("/user", (req, res) => {
-  res.send("Data deleted Successfully");
-});
 app.listen(port, () => {
   console.log("Server started running on the port " + port);
 });
