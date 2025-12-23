@@ -2,28 +2,34 @@ const express = require("express");
 const app = express();
 const port = 3000; // Define your port here
 
-// This matches: abc, abbc, abbbc...
-app.get("/user/:userId", (req, res) => {
-  console.log(req.params);
-  res.send("Data locally Naveen");
-});
-app.get("/user", (req, res) => {
-  console.log(req.query);
-  res.send("Data locally Naveen");
-});
+// app.get("/user", (req, res) => {
+//   console.log("It will go to infinite response loop for some time");
+// });
+// app.use(
+//   "/user",
+//   (req, res, next) => {
+//     next();
+//     res.send("Response 1!!");
+//   },
+//   (req, res) => {
+//     res.send("Response2 !!");
+//   }
+// );
+app.use("/user", [
+  (req, res, next) => {
+    console.log("Response1 !!");
 
-app.get(/\/ab?c/, (req, res) => {
-  res.send("Data locally Naveen");
-});
-app.get(/\/ab+c/, (req, res) => {
-  res.send("Data locally Naveen");
-});
-app.get(/\/ab*c/, (req, res) => {
-  res.send("Data locally Naveen");
-});
-app.get(/.fly$/, (req, res) => {
-  res.send("Data locally Naveen");
-});
+    next();
+  },
+  (req, res, next) => {
+    console.log("Response2 !!");
+
+    next();
+  },
+  (req, res, next) => {
+    res.send("Response 3");
+  },
+]);
 
 app.listen(port, () => {
   console.log("Server started running on the port " + port);
