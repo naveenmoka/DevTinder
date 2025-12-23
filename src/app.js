@@ -1,35 +1,22 @@
 const express = require("express");
 const app = express();
-const port = 3000; // Define your port here
+const port = 3000;
+const { adminAuth, userAuth } = require("./middlewares/auth");
 
-// app.get("/user", (req, res) => {
-//   console.log("It will go to infinite response loop for some time");
-// });
-// app.use(
-//   "/user",
-//   (req, res, next) => {
-//     next();
-//     res.send("Response 1!!");
-//   },
-//   (req, res) => {
-//     res.send("Response2 !!");
-//   }
-// );
-app.use("/user", [
-  (req, res, next) => {
-    console.log("Response1 !!");
+app.use("/admin", adminAuth);
 
-    next();
-  },
-  (req, res, next) => {
-    console.log("Response2 !!");
-
-    next();
-  },
-  (req, res, next) => {
-    res.send("Response 3");
-  },
-]);
+app.use("/admin/getAllData", (req, res) => {
+  res.send("All Data Sent");
+});
+app.get("/user/login", (req, res) => {
+  res.send("User Login successfully");
+});
+app.get("/user", userAuth, (req, res) => {
+  res.send("user Data Sent");
+});
+app.get("/admin/deleteUser", (req, res) => {
+  res.send("Deleted a user");
+});
 
 app.listen(port, () => {
   console.log("Server started running on the port " + port);
