@@ -1,21 +1,25 @@
 const express = require("express");
 const app = express();
 const port = 3000;
-const { adminAuth, userAuth } = require("./middlewares/auth");
 
-app.use("/admin", adminAuth);
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("something went wrong");
+  }
+});
+app.get("/getUserData", (req, res) => {
+  throw new Error("afoja");
+  res.send("User Data sent");
+});
 
-app.use("/admin/getAllData", (req, res) => {
-  res.send("All Data Sent");
-});
-app.get("/user/login", (req, res) => {
-  res.send("User Login successfully");
-});
-app.get("/user", userAuth, (req, res) => {
-  res.send("user Data Sent");
-});
-app.get("/admin/deleteUser", (req, res) => {
-  res.send("Deleted a user");
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    try {
+      res.send("user Data sent");
+    } catch (err) {
+      res.status(500).send("Some Error contact support team");
+    }
+  }
 });
 
 app.listen(port, () => {
