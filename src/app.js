@@ -5,6 +5,8 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+//Add data to the database
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
@@ -15,6 +17,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// Get first one user by firstName
 app.get("/user", async (req, res) => {
   const userFirstName = req.body.firstName;
   try {
@@ -29,12 +32,36 @@ app.get("/user", async (req, res) => {
   }
 });
 
+//Get all users at once by feed API
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
     res.send(users);
   } catch {
     res.status(404).send("something went wrong");
+  }
+});
+
+//Delete user by its UserId
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    res.send("User Deleted Successfully");
+  } catch (err) {
+    res.status(400).send("something went wrong");
+  }
+});
+
+//Update some details of user by its userId
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate({ _id: userId }, data);
+    res.send("User Details Updated Successfully");
+  } catch {
+    res.status(400).send("Something went wrong");
   }
 });
 
