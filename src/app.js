@@ -6,6 +6,12 @@ const port = 3000;
 
 app.use(express.json());
 
+async function createIndexes() {
+  await User.syncIndexes(); // creates the unique index from schema
+}
+
+createIndexes();
+
 //Add data to the database
 app.post("/signup", async (req, res) => {
   const user = new User(req.body);
@@ -58,10 +64,13 @@ app.patch("/user", async (req, res) => {
   const userId = req.body.userId;
   const data = req.body;
   try {
-    const user = await User.findByIdAndUpdate({ _id: userId }, data);
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     res.send("User Details Updated Successfully");
-  } catch {
-    res.status(400).send("Something went wrong");
+  } catch (err) {
+    res.status(400).send("Update Failed" + err.message);
   }
 });
 
