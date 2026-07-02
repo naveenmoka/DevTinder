@@ -4,9 +4,11 @@ const User = require("./models/user");
 const app = express();
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
 const port = 3000;
 
 app.use(express.json());
+app.use(cookieParser());
 
 async function createIndexes() {
   await User.syncIndexes(); // creates the unique index from schema
@@ -101,39 +103,19 @@ app.patch("/user/:userId", async (req, res) => {
 });
 
 //LOGIN API
-// app.post("/login", async (req, res) => {
-//   try {
-//     const { emailId, password } = req.body;
-
-//     const user = await User.findOne({ emailId: emailId });
-//     if (!user) {
-//       throw new Error("Invalid Credentials");
-//     }
-
-//     const isPasswordValid = await bcrypt.compare(password, user.password);
-//     if (!isPasswordValid) {
-//       throw new Error("Invalid Credentials");
-//     } else {
-//       res.send("Login Successfully");
-//     }
-//   } catch {
-//     res.status(400).send("Something went wrong");
-//   }
-// });
-
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
 
     const user = await User.findOne(emailId);
-    console.log(user);
     if (!user) {
       throw new Error("Invalid credentials");
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log(isPasswordValid, user);
 
     if (isPasswordValid) {
+      //Add the token to the cookie and return response back
+      res.cookie("token", "joajfeoej ge8930-2 r0fvaojioap3-q");
       res.send("Login Successful!!!");
     } else {
       throw new Error("Invalid credentials");
@@ -143,6 +125,16 @@ app.post("/login", async (req, res) => {
   }
 });
 
+//PROFILE API
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    res.send(token);
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
+  }
+});
 connectDB()
   .then(() => {
     console.log("database connected successfully..");
