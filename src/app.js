@@ -5,7 +5,7 @@ const app = express();
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const { userAuth } = require("./middlewares/auth");
 const port = 3000;
 
@@ -108,19 +108,17 @@ app.patch("/user/:userId", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
-    // const normalizedEmail = (emailId || "").toLowerCase();
-    // console.log(emailId, normalizedEmail);
 
     //the database method expects a query object, not a raw string - ({emaild}) not (emailId)
     const user = await User.findOne({ emailId });
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
 
     if (isPasswordValid) {
       //Create jwt token
-      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790");
+      const token = await user.getJWT();
 
       //Add the token to the cookie and return response back
       res.cookie("token", token, {
