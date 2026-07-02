@@ -6,6 +6,7 @@ const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 const port = 3000;
 
 app.use(express.json());
@@ -107,8 +108,11 @@ app.patch("/user/:userId", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
+    // const normalizedEmail = (emailId || "").toLowerCase();
+    // console.log(emailId, normalizedEmail);
 
-    const user = await User.findOne(emailId);
+    //the database method expects a query object, not a raw string - ({emaild}) not (emailId)
+    const user = await User.findOne({ emailId });
     if (!user) {
       throw new Error("Invalid credentials");
     }
@@ -119,10 +123,10 @@ app.post("/login", async (req, res) => {
       const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790");
 
       //Add the token to the cookie and return response back
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 900000),
+      });
       res.send("Login Successful!!!");
-    } else {
-      throw new Error("Invalid credentials");
     }
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
@@ -130,26 +134,21 @@ app.post("/login", async (req, res) => {
 });
 
 //PROFILE API
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-    const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");
-    console.log(decodedMessage);
-    const { _id } = decodedMessage;
-    const user = await User.findById(_id);
-
-    if (!user) {
-      throw new Error("Invalid User");
-    }
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
   }
 });
+
+//SendConnection Request API
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  res.send(user);
+});
+
 connectDB()
   .then(() => {
     console.log("database connected successfully..");
