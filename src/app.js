@@ -11,7 +11,6 @@ app.use(express.json());
 async function createIndexes() {
   await User.syncIndexes(); // creates the unique index from schema
 }
-
 createIndexes();
 
 //Add data to the database
@@ -98,6 +97,49 @@ app.patch("/user/:userId", async (req, res) => {
     res.send("User Details Updated Successfully");
   } catch (err) {
     res.status(400).send("Update Failed" + err.message);
+  }
+});
+
+//LOGIN API
+// app.post("/login", async (req, res) => {
+//   try {
+//     const { emailId, password } = req.body;
+
+//     const user = await User.findOne({ emailId: emailId });
+//     if (!user) {
+//       throw new Error("Invalid Credentials");
+//     }
+
+//     const isPasswordValid = await bcrypt.compare(password, user.password);
+//     if (!isPasswordValid) {
+//       throw new Error("Invalid Credentials");
+//     } else {
+//       res.send("Login Successfully");
+//     }
+//   } catch {
+//     res.status(400).send("Something went wrong");
+//   }
+// });
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne(emailId);
+    console.log(user);
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(isPasswordValid, user);
+
+    if (isPasswordValid) {
+      res.send("Login Successful!!!");
+    } else {
+      throw new Error("Invalid credentials");
+    }
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
   }
 });
 
