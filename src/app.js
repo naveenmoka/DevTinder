@@ -5,6 +5,7 @@ const app = express();
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const port = 3000;
 
 app.use(express.json());
@@ -114,8 +115,11 @@ app.post("/login", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (isPasswordValid) {
+      //Create jwt token
+      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790");
+
       //Add the token to the cookie and return response back
-      res.cookie("token", "joajfeoej ge8930-2 r0fvaojioap3-q");
+      res.cookie("token", token);
       res.send("Login Successful!!!");
     } else {
       throw new Error("Invalid credentials");
@@ -130,7 +134,18 @@ app.get("/profile", async (req, res) => {
   try {
     const cookies = req.cookies;
     const { token } = cookies;
-    res.send(token);
+    if (!token) {
+      throw new Error("Invalid Token");
+    }
+    const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");
+    console.log(decodedMessage);
+    const { _id } = decodedMessage;
+    const user = await User.findById(_id);
+
+    if (!user) {
+      throw new Error("Invalid User");
+    }
+    res.send(user);
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
   }
